@@ -1,0 +1,28 @@
+services:
+  web:
+    build: .
+    container_name: verigo-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Optional: Add PostgreSQL database if you want local development
+  # db:
+  #   image: postgres:15
+  #   container_name: verigo-postgres
+  #   environment:
+  #     POSTGRES_DB: verigo_db
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: password
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+
+# volumes:
+#   postgres_data:
