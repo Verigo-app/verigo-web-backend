@@ -19,3 +19,4 @@ python-multipart
 psycopg2-binary
 cloudinary==1.41.0
 pyzbar
+passlib[argon2]

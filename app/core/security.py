@@ -10,18 +10,22 @@ from app.core.config import settings
 from app.db.session import get_db
 from app.models.user import User
 
-# Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# ✅ Use Argon2 instead of bcrypt
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
+# --- Password Hashing ---
 def get_password_hash(password: str) -> str:
+    """Hash password using Argon2"""
     return pwd_context.hash(password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify password with Argon2"""
     return pwd_context.verify(plain_password, hashed_password)
 
 
-# JWT Token
+# --- JWT Token ---
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    """Generate JWT token with expiry"""
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
@@ -29,6 +33,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 def decode_access_token(token: str):
+    """Decode JWT token"""
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         return payload
@@ -36,14 +41,14 @@ def decode_access_token(token: str):
         return None
 
 
-# ✅ HTTP Bearer scheme for Swagger UI token input
+# --- Auth Dependency ---
 bearer_scheme = HTTPBearer()
 
-# ✅ Get current logged-in user using HTTPBearer token
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     db: Session = Depends(get_db)
 ) -> User:
+    """Get current logged-in user from JWT Bearer token"""
     token = credentials.credentials
     payload = decode_access_token(token)
     if not payload:
